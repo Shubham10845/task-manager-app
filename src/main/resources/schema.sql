@@ -1,0 +1,8 @@
+CREATE TABLE task (
+    id VARCHAR(36) PRIMARY KEY NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    description TEXT,
+    status ENUM('PENDING', 'IN_PROGRESS', 'DONE') DEFAULT 'PENDING' NOT NULL,
+    due_date DATE NOT NULL,
+    is_deleted BOOLEAN DEFAULT FALSE NOT NULL
+);
