@@ -56,10 +56,8 @@ class TaskControllerTest {
 
     @Test
     void createTaskShouldReturnCreatedTaskWhenValidRequest() throws Exception {
-        // Given
         when(taskService.saveTask(any(TaskRequestDTO.class))).thenReturn(taskResponseDTO);
 
-        // When & Then
         mockMvc.perform(post("/api/v1/tasks")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(taskRequestDTO)))
@@ -71,11 +69,9 @@ class TaskControllerTest {
 
     @Test
     void getTaskByIdShouldReturnTaskWhenTaskExists() throws Exception {
-        // Given
         String taskId = "test-id-123";
         when(taskService.getTaskById(taskId)).thenReturn(taskResponseDTO);
 
-        // When & Then
         mockMvc.perform(get("/api/v1/tasks/{id}", taskId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("test-id-123"))
@@ -84,25 +80,21 @@ class TaskControllerTest {
 
     @Test
     void getTaskByIdShouldReturnNotFoundWhenTaskDoesNotExist() throws Exception {
-        // Given
         String taskId = "non-existent-id";
         when(taskService.getTaskById(taskId)).thenThrow(new TaskNotFoundException("Task not found"));
 
-        // When & Then
         mockMvc.perform(get("/api/v1/tasks/{id}", taskId))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void updateTaskShouldReturnUpdatedTaskWhenValidRequest() throws Exception {
-        // Given
         String taskId = "test-id-123";
         taskRequestDTO.setTitle("Updated Task");
         taskResponseDTO.setTitle("Updated Task");
 
         when(taskService.updateTask(eq(taskId), any(TaskRequestDTO.class))).thenReturn(taskResponseDTO);
 
-        // When & Then
         mockMvc.perform(put("/api/v1/tasks/{id}", taskId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(taskRequestDTO)))
@@ -112,12 +104,10 @@ class TaskControllerTest {
 
     @Test
     void updateTaskShouldReturnNotFoundWhenTaskDoesNotExist() throws Exception {
-        // Given
         String taskId = "non-existent-id";
         when(taskService.updateTask(eq(taskId), any(TaskRequestDTO.class)))
                 .thenThrow(new TaskNotFoundException("Task not found"));
 
-        // When & Then
         mockMvc.perform(put("/api/v1/tasks/{id}", taskId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(taskRequestDTO)))
@@ -126,35 +116,28 @@ class TaskControllerTest {
 
     @Test
     void deleteTaskShouldReturnNoContentWhenTaskExists() throws Exception {
-        // Given
         String taskId = "test-id-123";
         when(taskService.deleteTaskById(taskId)).thenReturn(true);
 
-        // When & Then
         mockMvc.perform(delete("/api/v1/tasks/{id}", taskId))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void deleteTaskShouldReturnNotFoundWhenTaskDoesNotExist() throws Exception {
-        // Given
         String taskId = "non-existent-id";
         doThrow(new TaskNotFoundException("Task not found")).when(taskService).deleteTaskById(taskId);
 
-        // When & Then
         mockMvc.perform(delete("/api/v1/tasks/{id}", taskId))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void getAllTasksShouldReturnPaginatedTasksWhenValidPageAndSize() throws Exception {
-        // Given
         PaginatedTaskResponseDTO paginatedResponse = new PaginatedTaskResponseDTO(
                 Arrays.asList(taskResponseDTO), false, 1L, 0, 5);
 
         when(taskService.getAllTasks(0, 5)).thenReturn(paginatedResponse);
-
-        // When & Then
         mockMvc.perform(get("/api/v1/tasks/page/{page}/size/{size}", 0, 5))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tasks").isArray())
@@ -165,11 +148,9 @@ class TaskControllerTest {
 
     @Test
     void getAllTasksShouldReturnBadRequestWhenInvalidPageOrSize() throws Exception {
-        // Given
         when(taskService.getAllTasks(-1, 0))
                 .thenThrow(new InvalidPageOrSizeException("Page must be >= 0 and size must be > 0"));
 
-        // When & Then
         mockMvc.perform(get("/api/v1/tasks/page/{page}/size/{size}", -1, 0))
                 .andExpect(status().isBadRequest());
     }

@@ -15,11 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -43,29 +41,25 @@ class TaskServiceTest {
         taskRequestDTO.setTitle("Test Task");
         taskRequestDTO.setDescription("Test Description");
         taskRequestDTO.setStatus("PENDING");
-        taskRequestDTO.setDueDate("2026-06-30"); // Future date
+        taskRequestDTO.setDueDate("2026-06-30");
 
         taskModel = new TaskModel();
         taskModel.setId("test-id-123");
         taskModel.setTitle("Test Task");
         taskModel.setDescription("Test Description");
         taskModel.setStatus(TaskStatus.PENDING);
-        taskModel.setDueDate(LocalDate.of(2026, 6, 30)); // Future date
+        taskModel.setDueDate(LocalDate.of(2026, 6, 30));
     }
 
     //  SAVE TASK TESTS
-
     @Test
     void saveTaskShouldReturnTaskResponseDTOWhenValidTask() {
-        // Given
         try (MockedStatic<IdGeneratorUtil> mockedStatic = mockStatic(IdGeneratorUtil.class)) {
             mockedStatic.when(IdGeneratorUtil::generateId).thenReturn("test-id-123");
             when(taskRepository.selectTask("test-id-123")).thenReturn(taskModel);
 
-            // When
             TaskResponseDTO result = taskService.saveTask(taskRequestDTO);
 
-            // Then
             assertNotNull(result);
             assertEquals("test-id-123", result.getId());
             assertEquals("Test Task", result.getTitle());
@@ -80,10 +74,8 @@ class TaskServiceTest {
 
     @Test
     void saveTaskShouldThrowInvalidTitleExceptionWhenTitleIsNull() {
-        // Given
         taskRequestDTO.setTitle(null);
 
-        // When & Then
         InvalidTitleException exception = assertThrows(InvalidTitleException.class,
                 () -> taskService.saveTask(taskRequestDTO));
 
@@ -93,10 +85,8 @@ class TaskServiceTest {
 
     @Test
     void saveTaskShouldThrowInvalidTitleExceptionWhenTitleIsEmpty() {
-        // Given
         taskRequestDTO.setTitle("");
 
-        // When & Then
         InvalidTitleException exception = assertThrows(InvalidTitleException.class,
                 () -> taskService.saveTask(taskRequestDTO));
 
@@ -106,10 +96,8 @@ class TaskServiceTest {
 
     @Test
     void saveTaskShouldThrowInvalidDateExceptionWhenDueDateIsNull() {
-        // Given
         taskRequestDTO.setDueDate(null);
 
-        // When & Then
         InvalidDateException exception = assertThrows(InvalidDateException.class,
                 () -> taskService.saveTask(taskRequestDTO));
 
@@ -119,10 +107,8 @@ class TaskServiceTest {
 
     @Test
     void saveTaskShouldThrowInvalidDateExceptionWhenDueDateIsEmpty() {
-        // Given
         taskRequestDTO.setDueDate("");
 
-        // When & Then
         InvalidDateException exception = assertThrows(InvalidDateException.class,
                 () -> taskService.saveTask(taskRequestDTO));
 
@@ -132,10 +118,8 @@ class TaskServiceTest {
 
     @Test
     void saveTaskShouldThrowInvalidDateExceptionWhenDueDateIsInPast() {
-        // Given
-        taskRequestDTO.setDueDate("2020-01-01"); // Past date
+        taskRequestDTO.setDueDate("2020-01-01");
 
-        // When & Then
         InvalidDateException exception = assertThrows(InvalidDateException.class,
                 () -> taskService.saveTask(taskRequestDTO));
 
@@ -145,7 +129,6 @@ class TaskServiceTest {
 
     @Test
     void saveTaskShouldAcceptFutureDateWhenDueDateIsTomorrow() {
-        // Given
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         taskRequestDTO.setDueDate(tomorrow.toString());
 
@@ -160,28 +143,22 @@ class TaskServiceTest {
             mockedStatic.when(IdGeneratorUtil::generateId).thenReturn("tomorrow-id");
             when(taskRepository.selectTask("tomorrow-id")).thenReturn(tomorrowTaskModel);
 
-            // When
             TaskResponseDTO result = taskService.saveTask(taskRequestDTO);
 
-            // Then
             assertNotNull(result);
             assertEquals("tomorrow-id", result.getId());
             assertEquals(tomorrow, result.getDueDate());
         }
     }
 
-    // ===================== GET TASK BY ID TESTS =====================
-
+//  GET TASK BY ID TESTS
     @Test
     void getTaskByIdShouldReturnTaskResponseDTOWhenTaskExists() {
-        // Given
         String taskId = "test-id-123";
         when(taskRepository.selectTask(taskId)).thenReturn(taskModel);
 
-        // When
         TaskResponseDTO result = taskService.getTaskById(taskId);
 
-        // Then
         assertNotNull(result);
         assertEquals("test-id-123", result.getId());
         assertEquals("Test Task", result.getTitle());
@@ -190,11 +167,9 @@ class TaskServiceTest {
 
     @Test
     void getTaskByIdShouldThrowTaskNotFoundExceptionWhenTaskDoesNotExist() {
-        // Given
         String taskId = "non-existent-id";
         when(taskRepository.selectTask(taskId)).thenReturn(null);
 
-        // When & Then
         TaskNotFoundException exception = assertThrows(TaskNotFoundException.class,
                 () -> taskService.getTaskById(taskId));
 
@@ -202,11 +177,9 @@ class TaskServiceTest {
         verify(taskRepository).selectTask(taskId);
     }
 
-    // ===================== UPDATE TASK TESTS =====================
-
+//    UPDATE TASK TESTS
     @Test
     void updateTaskShouldReturnUpdatedTaskWhenValidRequest() {
-        // Given
         String taskId = "test-id-123";
         taskRequestDTO.setTitle("Updated Task");
         taskRequestDTO.setStatus("IN_PROGRESS");
@@ -222,10 +195,8 @@ class TaskServiceTest {
                 eq("IN_PROGRESS"), eq(LocalDate.of(2026, 6, 30)))).thenReturn(true);
         when(taskRepository.selectTask(taskId)).thenReturn(updatedTaskModel);
 
-        // When
         TaskResponseDTO result = taskService.updateTask(taskId, taskRequestDTO);
 
-        // Then
         assertNotNull(result);
         assertEquals("Updated Task", result.getTitle());
         assertEquals("IN_PROGRESS", result.getStatus());
@@ -235,11 +206,9 @@ class TaskServiceTest {
 
     @Test
     void updateTaskShouldThrowInvalidTitleExceptionWhenTitleIsNull() {
-        // Given
         String taskId = "test-id-123";
         taskRequestDTO.setTitle(null);
 
-        // When & Then
         InvalidTitleException exception = assertThrows(InvalidTitleException.class,
                 () -> taskService.updateTask(taskId, taskRequestDTO));
 
@@ -249,11 +218,9 @@ class TaskServiceTest {
 
     @Test
     void updateTaskShouldThrowInvalidTitleExceptionWhenTitleIsEmptyAfterTrim() {
-        // Given
         String taskId = "test-id-123";
-        taskRequestDTO.setTitle("   "); // Only whitespace
+        taskRequestDTO.setTitle("   ");
 
-        // When & Then
         InvalidTitleException exception = assertThrows(InvalidTitleException.class,
                 () -> taskService.updateTask(taskId, taskRequestDTO));
 
@@ -263,11 +230,9 @@ class TaskServiceTest {
 
     @Test
     void updateTaskShouldThrowInvalidDateExceptionWhenDueDateIsNull() {
-        // Given
         String taskId = "test-id-123";
         taskRequestDTO.setDueDate(null);
 
-        // When & Then
         InvalidDateException exception = assertThrows(InvalidDateException.class,
                 () -> taskService.updateTask(taskId, taskRequestDTO));
 
@@ -277,11 +242,9 @@ class TaskServiceTest {
 
     @Test
     void updateTaskShouldThrowInvalidStatusExceptionWhenStatusIsNull() {
-        // Given
         String taskId = "test-id-123";
         taskRequestDTO.setStatus(null);
 
-        // When & Then
         InvalidStatusException exception = assertThrows(InvalidStatusException.class,
                 () -> taskService.updateTask(taskId, taskRequestDTO));
 
@@ -291,11 +254,9 @@ class TaskServiceTest {
 
     @Test
     void updateTaskShouldThrowInvalidStatusExceptionWhenStatusIsEmpty() {
-        // Given
         String taskId = "test-id-123";
         taskRequestDTO.setStatus("");
 
-        // When & Then
         InvalidStatusException exception = assertThrows(InvalidStatusException.class,
                 () -> taskService.updateTask(taskId, taskRequestDTO));
 
@@ -305,11 +266,9 @@ class TaskServiceTest {
 
     @Test
     void updateTaskShouldThrowInvalidStatusExceptionWhenStatusIsInvalid() {
-        // Given
         String taskId = "test-id-123";
         taskRequestDTO.setStatus("INVALID_STATUS");
 
-        // When & Then
         InvalidStatusException exception = assertThrows(InvalidStatusException.class,
                 () -> taskService.updateTask(taskId, taskRequestDTO));
 
@@ -319,11 +278,9 @@ class TaskServiceTest {
 
     @Test
     void updateTaskShouldThrowInvalidDateExceptionWhenDueDateIsInPast() {
-        // Given
         String taskId = "test-id-123";
         taskRequestDTO.setDueDate("2020-01-01");
 
-        // When & Then
         InvalidDateException exception = assertThrows(InvalidDateException.class,
                 () -> taskService.updateTask(taskId, taskRequestDTO));
 
@@ -333,40 +290,32 @@ class TaskServiceTest {
 
     @Test
     void updateTaskShouldThrowTaskNotFoundExceptionWhenTaskDoesNotExist() {
-        // Given
         String taskId = "non-existent-id";
         when(taskRepository.updateTask(any(), any(), any(), any(), any())).thenReturn(false);
 
-        // When & Then
         TaskNotFoundException exception = assertThrows(TaskNotFoundException.class,
                 () -> taskService.updateTask(taskId, taskRequestDTO));
 
         assertEquals("Task not found with id: non-existent-id", exception.getMessage());
     }
 
-    // ===================== DELETE TASK TESTS =====================
-
+//    DELETE TASK TESTS
     @Test
     void deleteTaskByIdShouldReturnTrueWhenTaskExists() {
-        // Given
         String taskId = "test-id-123";
         when(taskRepository.deleteTask(taskId)).thenReturn(true);
 
-        // When
         boolean result = taskService.deleteTaskById(taskId);
 
-        // Then
         assertTrue(result);
         verify(taskRepository).deleteTask(taskId);
     }
 
     @Test
     void deleteTaskByIdShouldThrowTaskNotFoundExceptionWhenTaskDoesNotExist() {
-        // Given
         String taskId = "non-existent-id";
         when(taskRepository.deleteTask(taskId)).thenReturn(false);
 
-        // When & Then
         TaskNotFoundException exception = assertThrows(TaskNotFoundException.class,
                 () -> taskService.deleteTaskById(taskId));
 
@@ -374,11 +323,9 @@ class TaskServiceTest {
         verify(taskRepository).deleteTask(taskId);
     }
 
-    // ===================== GET ALL TASKS TESTS =====================
-
+//  GET ALL TASKS TESTS
     @Test
     void getAllTasksShouldReturnPaginatedResponseWhenValidPageAndSize() {
-        // Given
         int page = 0;
         int size = 5;
         List<TaskModel> tasks = Arrays.asList(taskModel);
@@ -387,10 +334,8 @@ class TaskServiceTest {
         when(taskRepository.selectAllTasksPaginated(size, 0)).thenReturn(tasks);
         when(taskRepository.countAllTasks()).thenReturn(totalCount);
 
-        // When
         PaginatedTaskResponseDTO result = taskService.getAllTasks(page, size);
 
-        // Then
         assertNotNull(result);
         assertEquals(1, result.getTasks().size());
         assertTrue(result.isHasMore()); // (0 + 5) < 10 = true
@@ -404,11 +349,9 @@ class TaskServiceTest {
 
     @Test
     void getAllTasksShouldThrowInvalidPageOrSizeExceptionWhenPageIsNegative() {
-        // Given
         int page = -1;
         int size = 5;
 
-        // When & Then
         InvalidPageOrSizeException exception = assertThrows(InvalidPageOrSizeException.class,
                 () -> taskService.getAllTasks(page, size));
 
@@ -418,11 +361,9 @@ class TaskServiceTest {
 
     @Test
     void getAllTasksShouldThrowInvalidPageOrSizeExceptionWhenSizeIsZero() {
-        // Given
         int page = 0;
         int size = 0;
 
-        // When & Then
         InvalidPageOrSizeException exception = assertThrows(InvalidPageOrSizeException.class,
                 () -> taskService.getAllTasks(page, size));
 
@@ -432,11 +373,9 @@ class TaskServiceTest {
 
     @Test
     void getAllTasksShouldThrowInvalidPageOrSizeExceptionWhenSizeIsNegative() {
-        // Given
         int page = 0;
         int size = -1;
 
-        // When & Then
         InvalidPageOrSizeException exception = assertThrows(InvalidPageOrSizeException.class,
                 () -> taskService.getAllTasks(page, size));
 
@@ -446,27 +385,23 @@ class TaskServiceTest {
 
     @Test
     void getAllTasksShouldReturnHasMoreFalseWhenNoMoreRecords() {
-        // Given
         int page = 1;
         int size = 5;
         List<TaskModel> tasks = Arrays.asList(taskModel);
-        long totalCount = 5L; // Total 5 records, page 1 with size 5 means offset 5, so no more records
+        long totalCount = 5L;
 
         when(taskRepository.selectAllTasksPaginated(size, 5)).thenReturn(tasks);
         when(taskRepository.countAllTasks()).thenReturn(totalCount);
 
-        // When
         PaginatedTaskResponseDTO result = taskService.getAllTasks(page, size);
 
-        // Then
         assertNotNull(result);
-        assertFalse(result.isHasMore()); // (5 + 5) >= 5 = false
+        assertFalse(result.isHasMore());
         verify(taskRepository).selectAllTasksPaginated(size, 5);
     }
 
     @Test
     void getAllTasksShouldReturnEmptyListWhenNoTasks() {
-        // Given
         int page = 0;
         int size = 5;
         List<TaskModel> emptyTasks = Arrays.asList();
@@ -475,10 +410,8 @@ class TaskServiceTest {
         when(taskRepository.selectAllTasksPaginated(size, 0)).thenReturn(emptyTasks);
         when(taskRepository.countAllTasks()).thenReturn(totalCount);
 
-        // When
         PaginatedTaskResponseDTO result = taskService.getAllTasks(page, size);
 
-        // Then
         assertNotNull(result);
         assertEquals(0, result.getTasks().size());
         assertFalse(result.isHasMore());
@@ -487,26 +420,22 @@ class TaskServiceTest {
 
     @Test
     void getAllTasksShouldCalculateOffsetCorrectlyForDifferentPages() {
-        // Given
         int page = 3;
         int size = 10;
-        int expectedOffset = 30; // page * size = 3 * 10 = 30
+        int expectedOffset = 30;
         List<TaskModel> tasks = Arrays.asList(taskModel);
         long totalCount = 100L;
 
         when(taskRepository.selectAllTasksPaginated(size, expectedOffset)).thenReturn(tasks);
         when(taskRepository.countAllTasks()).thenReturn(totalCount);
 
-        // When
         taskService.getAllTasks(page, size);
 
-        // Then
         verify(taskRepository).selectAllTasksPaginated(size, expectedOffset);
     }
 
     @Test
     void getAllTasksShouldHandleMultipleTasks() {
-        // Given
         int page = 0;
         int size = 5;
 
@@ -523,16 +452,13 @@ class TaskServiceTest {
         when(taskRepository.selectAllTasksPaginated(size, 0)).thenReturn(tasks);
         when(taskRepository.countAllTasks()).thenReturn(totalCount);
 
-        // When
         PaginatedTaskResponseDTO result = taskService.getAllTasks(page, size);
 
-        // Then
         assertNotNull(result);
         assertEquals(2, result.getTasks().size());
-        assertTrue(result.isHasMore()); // (0 + 5) < 15 = true
+        assertTrue(result.isHasMore());
         assertEquals(15L, result.getTotal());
 
-        // Verify both tasks are correctly converted
         TaskResponseDTO firstTask = result.getTasks().get(0);
         assertEquals("test-id-123", firstTask.getId());
         assertEquals("Test Task", firstTask.getTitle());
